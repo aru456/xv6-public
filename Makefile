@@ -182,9 +182,10 @@ UPROGS=\
 	_wc\
 	_zombie\
 	_hello\
+	_preprocess\
 
-fs.img: mkfs README $(UPROGS)
-	./mkfs fs.img README $(UPROGS)
+fs.img: mkfs README $(UPROGS) input.txt
+	./mkfs fs.img README $(UPROGS) input.txt
 
 -include *.d
 
