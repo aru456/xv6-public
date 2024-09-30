@@ -5,7 +5,7 @@
 
 #define MAX_LINE 1024
 
-// Custom implementation of strcat in xv6
+//implementation of strcat
 char*
 strcat(char *dest, const char *src)
 {
@@ -15,7 +15,7 @@ strcat(char *dest, const char *src)
   return dest;
 }
 
-// Custom implementation of strncat in xv6
+//implementation of strncat
 char*
 strncat(char *dest, const char *src, int n)
 {
@@ -26,7 +26,7 @@ strncat(char *dest, const char *src, int n)
   return dest;
 }
 
-// Custom implementation of strncmp in xv6
+//implementation of strncmp
 int
 strncmp(const char *p, const char *q, int n)
 {
@@ -37,21 +37,22 @@ strncmp(const char *p, const char *q, int n)
   return (uchar)*p - (uchar)*q;
 }
 
-// Check if a character is a valid word boundary
+// Check if a character is a valid word boundary and checked with most of GCC commands to see if they are being considered as whole string or not
+// see @ and * are aslo added here similar to that of GCC and $ is not added here similar to that of GCC
 int
 is_word_boundary(char c)
 {
   return (c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\0' ||
           c == '.' || c == ',' || c == '!' || c == '?' || c == ';' || c == ':' ||
           c == '(' || c == ')' || c == '[' || c == ']' || c == '{' || c == '}' ||
-          c == '-' || c == '"' || c == '\'');
+          c == '-' || c == '"' || c == '\'' || c == '@' || c == '*');
 }
 
 // Function to replace a variable with its value in a line of text
 void
 replace_var(char *line, const char *var, const char *val)
 {
-  char buffer[MAX_LINE] = {0};  // Initialize buffer with zero
+  char buffer[MAX_LINE] = {0};  
   char *pos = line;
   char *var_pos;
   int var_len = strlen(var);
@@ -64,20 +65,15 @@ replace_var(char *line, const char *var, const char *val)
        (var_pos == line || is_word_boundary(var_pos[-1]))){
       // Copy the part of the line before the variable to the buffer
       strncat(buffer, pos, var_pos - pos);
-      // Add the replacement value
       strcat(buffer, val);
-      // Move the position to after the found variable
       pos = var_pos + var_len;
     } else {
-      // Continue searching
       strncat(buffer, pos, 1);
       pos++;
     }
   }
 
-  // Add the remaining part of the line after the last replacement
   strcat(buffer, pos);
-  // Copy the modified content back into the original line
   strcpy(line, buffer);
 }
 
@@ -90,14 +86,12 @@ main(int argc, char *argv[])
     exit();
   }
 
-  // Open the input file for reading
   int fd = open(argv[1], O_RDONLY);
   if(fd < 0){
     printf(2, "Error: Could not open file %s\n", argv[1]);
     exit();
   }
 
-  // Open the output file for writing
   int output_fd = open("output.txt", O_CREATE | O_WRONLY);
   if(output_fd < 0){
     printf(2, "Error: Could not create output file\n");
@@ -105,7 +99,6 @@ main(int argc, char *argv[])
     exit();
   }
 
-  // Read the file line by line
   char line[MAX_LINE];
   int n;
   while((n = read(fd, line, sizeof(line) - 1)) > 0){
@@ -119,11 +112,7 @@ main(int argc, char *argv[])
           *equal_sign = '\0';  // Split the string
           char *var = argv[i] + 2;  // Skip "-D"
           char *val = equal_sign + 1;
-
-          // Replace occurrences of the variable in the line
           replace_var(line, var, val);
-
-          // Restore the '=' in the original string
           *equal_sign = '=';
         }
       }
