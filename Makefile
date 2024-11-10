@@ -183,6 +183,10 @@ UPROGS=\
 	_zombie\
 	_hello\
 	_preprocess\
+	_nice\
+	_ps\
+	_dproc\
+	_test1\
 
 fs.img: mkfs README $(UPROGS) input.txt
 	./mkfs fs.img README $(UPROGS) input.txt
