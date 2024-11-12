@@ -1,98 +1,96 @@
-# Homework 3: Priority-Based Scheduler with `nice` System Call in xv6
+Homework 3: Priority-Based Scheduler with `nice` System Call in xv6
 
-## Project Description
-This assignment focuses on implementing a **Priority-Based Scheduler** in the xv6 operating system, with an additional `nice` system call to adjust process priorities. This scheduler has 5 priority levels (from 1 to 5), and processes are scheduled using a Round Robin mechanism within each priority level. Users can adjust a process's priority using the `nice` command, either for the current process or a specified process by PID.
+Project Description
+This assignment focuses on implementing a Priority-Based Scheduler in the xv6 operating system, with an additional `nice` system call to adjust process priorities. This scheduler has 5 priority levels (from 1 to 5), and processes are scheduled using a Round Robin mechanism within each priority level. Users can adjust a process's priority using the `nice` command, either for the current process or a specified process by PID.
 
-### Workflow and Usage
+Workflow and Usage
 
-1. **Process Listing**:
+1. Process Listing:
    - Use the `ps` command to display all processes, showing their PID, state, and current priority.
 
-2. **Setting Priority for the Current Process**:
+2. Setting Priority for the Current Process:
    - Run `nice <value>` to set the priority of the current process, where `<value>` is the new priority level (1–5).
 
-3. **Setting Priority for a Specific Process by PID**:
+3. Setting Priority for a Specific Process by PID:
    - Run `nice <PID> <value>` to set the priority of a specific process identified by its PID, where `<value>` is the new priority level (1–5).
 
-4. **Error Handling**:
+4. Error Handling:
    - If you attempt to set priorities outside the valid range (1–5) or use invalid inputs, the system will display error messages (e.g., `nice <PID> 100`, `nice $ 3`, `nice -2`, or `nice 0 0`).
 
-## How to Run Task 1 Tests
+How to Run Task 1 Tests
 
-### Task 1: `nice` System Call Tests with `task1_syscall_test`
+Task 1: `nice` System Call Tests with `task1_syscall_test`
 
-- **Purpose**: This test verifies that the `nice` system call works as expected when adjusting process priorities programmatically.
-- **Instructions**: Run `task1_syscall_test` in xv6 CLI to execute the automated tests:
+- Purpose: This test verifies that the `nice` system call works as expected when adjusting process priorities programmatically.
+- Instructions: Run `task1_syscall_test` in xv6 CLI to execute the automated tests:
 
-- **Expected Output**: Each test will display a message indicating whether it passed or failed, similar to:
-  ```
+- Expected Output: Each test will display a message indicating whether it passed or failed, similar to:
+  
   Test 1 Passed: Successfully set PID 3 from Old Priority 2 to New Priority 5
   Test 2 Passed: Rejected invalid high priority (25)
-  ...
-  All tests completed successfully
-  ```
-
-### Task 1: Command-Line Interface Tests with `task1_cli_test`
-
-- **Purpose**: This test evaluates `nice` functionality when used from the command line, including edge cases.
-- **Instructions**: Run `task1_cli_test` to test the following scenarios:
-  - **Setting Priority for Current Process**: Try setting priorities within the valid range.
-  - **Out-of-Range Values**: Use out-of-range values (e.g., `9`, `0`, `-9`) and check for rejection.
-  - **Non-Numeric Input**: Test non-numeric inputs (e.g., `,` or `abc`) and confirm error handling.
-  - **Non-Existent PIDs**: Use non-existent PIDs and ensure the system rejects the request.
   
-- **Expected Output**: Each test should confirm whether the input was correctly accepted or rejected:
-  ```
+  All tests completed successfully
+  
+
+Task 1: Command-Line Interface Tests with `task1_cli_test`
+
+- Purpose: This test evaluates `nice` functionality when used from the command line, including edge cases.
+- Instructions: Run `task1_cli_test` to test the following scenarios:
+  - Setting Priority for Current Process: Try setting priorities within the valid range.
+  - Out-of-Range Values: Use out-of-range values (e.g., `9`, `0`, `-9`) and check for rejection.
+  - Non-Numeric Input: Test non-numeric inputs (e.g., `,` or `abc`) and confirm error handling.
+  - Non-Existent PIDs: Use non-existent PIDs and ensure the system rejects the request.
+  
+- Expected Output: Each test should confirm whether the input was correctly accepted or rejected:
+  
   Test: Setting priority to 1 for current process | Command: nice 1
   Test: Setting priority to 9 (out of range) for current process | Command: nice 9
   Error: Priority must be an integer from 1 to 5.
-  ...
+  
   All tests completed successfully
-  ```
+  
 
-## How to Run Task 2 Tests
+How to Run Task 2 Tests
 
 Each test case for Task 2 forks multiple child processes and demonstrates how they behave under different priority levels. The `task2_test1`, `task2_test2`, and `task2_test3` commands represent different scenarios for the priority-based scheduler. Follow these instructions for each case:
 
-### Case 1: Running `task2_test1`
+Case 1: Running `task2_test1`
 
-- **Purpose**: This test forks 3-4 child processes, allowing you to observe priority-based scheduling when one of the children is set to the lowest priority level (`5`).
-- **Instructions**:
+- Purpose: This test forks 3-4 child processes, allowing you to observe priority-based scheduling when one of the children is set to the lowest priority level (`5`).
+- Instructions:
   1. Run `task2_test1` to start the test.
   2. After the processes are created, use `nice <PID> 5` to set one of the child processes to priority `5`, making it the least prioritized process.
   3. Observe that only processes with the lowest priority value (highest priority) and `RUNNABLE` status are allowed to run.
 
-### Case 2: Running `task2_test2`
+Case 2: Running `task2_test2`
 
-- **Purpose**: This test decreases the priority of one specific child process, making it the highest-priority process.
-- **Instructions**:
+- Purpose: This test decreases the priority of one specific child process, making it the highest-priority process.
+- Instructions:
   1. Run `task2_test2` to start the test.
   2. After the processes are created, use `nice <PID> <priority>` to set a specific child process to a lower priority value (higher priority).
   3. Observe that this high-priority process is scheduled to run before others, based on the priority level.
 
-### Case 3: Running `task2_test3`
+Case 3: Running `task2_test3`
 
-- **Purpose**: This test sets all child processes to the same priority, allowing you to observe standard round-robin scheduling within a single priority level.
-- **Instructions**:
+- Purpose: This test sets all child processes to the same priority, allowing you to observe standard round-robin scheduling within a single priority level.
+- Instructions:
   1. Run `task2_test3` to start the test.
   2. With all processes set to the same priority, they should exhibit round-robin behavior.
 
-## Switching Between Schedulers
+Switching Between Schedulers
 
-You can switch between the **Priority-Based Scheduler** and a **Standard Round-Robin Scheduler** by modifying a compile-time flag in `defs.h`.
+You can switch between the Priority-Based Scheduler and a Standard Round-Robin Scheduler by modifying a compile-time flag in `defs.h`.
 
-- **Priority-Based Round-Robin Scheduler (default)**:
+- Priority-Based Round-Robin Scheduler (default):
    - This scheduler selects `RUNNABLE` processes with the lowest priority_value (indicating high priority) to run first.
   
-- **Standard Round-Robin Scheduler**:
+- Standard Round-Robin Scheduler:
    - To switch to a simple round-robin scheduler without priorities, open `defs.h` and locate the following line:
-     ```c
      // #define ROUND_ROBIN
-     ```
+     
    - Uncomment this line to enable the standard round-robin scheduler:
-     ```c
      #define ROUND_ROBIN
-     ```
+     
    - Recompile xv6. The system will now schedule all processes in a round-robin fashion, ignoring priority values.
 
-**Note**: Only one scheduler will be active at a time, based on the presence of `#define ROUND_ROBIN`. To revert to the Priority-Based Scheduler, simply comment out the `#define ROUND_ROBIN` line and recompile.
+Only one scheduler will be active at a time, based on the presence of `#define ROUND_ROBIN`. To revert to the Priority-Based Scheduler, simply comment out the `#define ROUND_ROBIN` line and recompile.
