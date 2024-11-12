@@ -1,66 +1,87 @@
-// task2_test2.c
 #include "types.h"
 #include "stat.h"
 #include "user.h"
 
-#define TICKS_PER_SECOND 100 // Assuming 100 ticks per second in xv6
-
-// Simple integer-to-string conversion function
-void itoa(int num, char *str) {
-    int i = 0;
+// Integer to ASCII conversion function
+void int_to_string(int num, char *str) {
+    int idx = 0;
     if (num == 0) {
-        str[i++] = '0';
+        str[idx++] = '0';
     } else {
-        // Handle the number and convert to string in reverse order
-        while (num != 0) {
-            str[i++] = (num % 10) + '0';
-            num /= 10;
+        int temp_num = num;
+        while (temp_num != 0) {
+            str[idx++] = (temp_num % 10) + '0';
+            temp_num /= 10;
         }
     }
-    str[i] = '\0';
+    str[idx] = '\0';
 
     // Reverse the string
-    for (int j = 0; j < i / 2; j++) {
-        char temp = str[j];
-        str[j] = str[i - j - 1];
-        str[i - j - 1] = temp;
+    for (int i = 0; i < idx / 2; i++) {
+        char temp = str[i];
+        str[i] = str[idx - i - 1];
+        str[idx - i - 1] = temp;
     }
 }
 
 int main() {
-    int pid;
+    int child_pid;
+    int status_pipe[2];
 
-    // Run printprimes with argument 3 in the background
-    printf(1, "Running 'printprimes 3 &' in the background\n");
-    pid = fork();
-    if (pid == 0) { // Child process to execute printprimes
-        char *args[] = {"printprimes", "3", 0};
+    if (pipe(status_pipe) < 0) {
+        printf(1, "Error: Unable to create status pipe\n");
+        exit();
+    }
+
+    // Run 'printprimes 3 &' in the background
+    printf(1, "Launching 'printprimes 3 &' in the background\n");
+    child_pid = fork();
+    if (child_pid == 0) { // Child process to execute printprimes
+        close(status_pipe[0]); // Close read end in child
+
+        // Convert write end file descriptor to string
+        char write_fd_str[10];
+        int_to_string(status_pipe[1], write_fd_str);
+
+        char *args[] = {"printprimes", "3", write_fd_str, 0};
         exec("printprimes", args);
+        printf(1, "Error: exec printprimes failed\n");
         exit();
-    } else if (pid > 0) {
-        printf(1, "Parent %d created child %d\n", getpid(), pid);
+    } else if (child_pid > 0) {
+        close(status_pipe[1]); // Close write end in parent
+
+        // Wait for the signal from printprimes
+        char signal_buf[5];
+        int bytes_read = read(status_pipe[0], signal_buf, 4);
+        if (bytes_read != 4) {
+            printf(1, "Error: Did not receive expected signal from printprimes\n");
+            exit();
+        }
+        signal_buf[4] = '\0';
+        if (strcmp(signal_buf, "done") == 0) {
+            printf(1, "\nAll child processes of printprimes are created and running.\n");
+        } else {
+            printf(1, "Error: Received unexpected signal from printprimes: %s\n", signal_buf);
+            exit();
+        }
+        close(status_pipe[0]); // Close read end
+
+        // Adjust priority using `nice` command for a specific child process
+        if (fork() == 0) { // Child process to execute nice
+            char *args[] = {"nice", "5", "5", 0};
+            printf(1, "\nExecuting 'nice 5 5'\n");
+            exec("nice", args);
+            printf(1, "Error: exec nice failed\n");
+            exit();
+        }
+        wait(); // Wait for nice command to complete
+
+        // Wait for printprimes to finish
+        wait();
     } else {
-        printf(1, "Failed to fork printprimes\n");
+        printf(1, "Error: fork failed\n");
         exit();
     }
-
-    // Busy-wait for approximately 1 second to ensure printprimes starts
-    int start_ticks = uptime();
-    while (uptime() - start_ticks < TICKS_PER_SECOND);
-
-    // Run the nice command to set priority to 7 for the captured PID
-    printf(1, "\nRunning 'nice 7 %d'\n", pid);
-    if (fork() == 0) { // Child process to execute nice
-        char pid_str[10];
-        itoa(pid, pid_str); // Convert PID to string for exec arguments
-        char *args[] = {"nice", "7", pid_str, 0};
-        exec("nice", args);
-        exit();
-    }
-    wait(); // Wait for the nice command to complete
-
-    // Wait for all child processes to finish
-    wait();
 
     exit();
 }
