@@ -39,3 +39,8 @@ void* memset(void*, int, uint);
 void* malloc(uint);
 void free(void*);
 int atoi(const char*);
+int getstate(void);
+int yield(void);
+int getmutex(void);
+void lock(int mutexid);
+void unlock(int mutexid);

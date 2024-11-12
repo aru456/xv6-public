@@ -1,0 +1,17 @@
+# Homework 3: Priority-Based Scheduler with `nice` System Call in xv6
+
+### Project Description
+This assignemtn focuses on implementing a **Priority-Based Scheduler** in the xv6 operating system, with an additional `nice` system call to adjust process priorities. This scheduler has 5 priority levels (from 1 to 5), and processes are scheduled using a Round Robin mechanism within each priority level. Users can adjust a process's priority using the `nice` command, either for the current process or a specified process by PID.
+
+### Workflow
+1. **Process Listing**:
+   - Use the `ps` command to display all processes, showing their PID, state, and current priority.
+
+2. **Setting Priority for the Current Process**:
+   - Use `nice <value>` to set the priority of the current process, where `<value>` is the new priority level (1–5).
+
+3. **Setting Priority for a Specific Process by PID**:
+   - Use `nice <PID> <value>` to set the priority of a specific process identified by its PID, where `<value>` is the new priority level (1–5).
+
+4. **Error Handling**:
+   - You can attempt to set priorities outside the valid range (1–5) or using invalid inputs will result in an error messages like `nice <PID> 100 or nice $ 3 or nice -2 or nice 0 0`.

@@ -37,6 +37,20 @@ sys_kill(void)
 }
 
 int
+sys_getstate(void) {
+    return myproc()->state;
+}
+
+int
+sys_yield(void)
+{
+    yield();  // Call the kernel yield function
+    return 0;
+}
+
+
+
+int
 sys_getpid(void)
 {
   return myproc()->pid;

@@ -88,10 +88,10 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
-  p->priority = 10;  //Default Priority of a process is set to be 10
+    //Default Priority of a process is set to be 10
 
   release(&ptable.lock);
-
+  p->priority = 4;
   // Allocate kernel stack.
   if((p->kstack = kalloc()) == 0){
     p->state = UNUSED;
@@ -320,6 +320,7 @@ wait(void)
 //  - swtch to start running that process
 //  - eventually that process transfers control
 //      via swtch back to the scheduler.
+
 void
 scheduler(void)
 {
@@ -330,6 +331,7 @@ scheduler(void)
   for(;;){
     // Enable interrupts on this processor.
     sti();
+
     acquire(&ptable.lock);
 
 #ifdef ROUND_ROBIN
@@ -350,24 +352,33 @@ scheduler(void)
       c->proc = 0;
     }
 #else
-    // Priority-based Round Robin Scheduler (existing code)
-    struct proc *p1, *highP;
+    // Priority-based Scheduler
+    struct proc *highP, *p1;
+
+    highP = 0;
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE)
         continue;
 
       highP = p;
-      // Find process with highest priority
+      // Find process with the highest priority
       for(p1 = ptable.proc; p1 < &ptable.proc[NPROC]; p1++){
         if(p1->state != RUNNABLE)
           continue;
-        if(highP->priority > p1->priority)   // larger value, lower priority
+        if(highP->priority > p1->priority)   // larger value means lower priority
           highP = p1;
       }
       p = highP;
+
+      // Switch to chosen process
       c->proc = p;
       switchuvm(p);
       p->state = RUNNING;
+
+      /*
+      Save current registers in c->scheduler which points to a struct context
+      Load registers from process's context
+      */
 
       swtch(&(c->scheduler), p->context);
       switchkvm();
@@ -380,9 +391,6 @@ scheduler(void)
     release(&ptable.lock);
   }
 }
-
-  
-  
 
 // Enter scheduler.  Must hold only// and have changed proc->state. Saves and restores
 // intena because intena is a property of this
@@ -582,14 +590,19 @@ for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
 release(&ptable.lock);
 return 22;
 }
+
 int
-nice(int pid, int new_priority)
-{
+nice(int pid, int new_priority) {
     struct proc *p;
     int old_priority = -1;  // Initialize with -1 to handle cases where PID is not found
 
+    if (new_priority < 1 || new_priority > 5) {
+        return -1;  // Return -1 if the priority is out of range
+    }
+
     acquire(&ptable.lock);  // Lock the process table
 
+    // Search for the process with the given pid
     for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
         if (p->pid == pid) {
             old_priority = p->priority;  // Save the current priority
@@ -599,5 +612,7 @@ nice(int pid, int new_priority)
     }
 
     release(&ptable.lock);  // Release the lock
-    return old_priority;     // Return the old priority or -1 if PID was not found
+
+    // Return the old priority if the process was found; otherwise, return -1
+    return (old_priority != -1) ? old_priority : -1;
 }
