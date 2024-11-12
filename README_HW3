@@ -82,7 +82,7 @@ Each test case for Task 2 forks multiple child processes and demonstrates how th
 You can switch between the **Priority-Based Scheduler** and a **Standard Round-Robin Scheduler** by modifying a compile-time flag in `defs.h`.
 
 - **Priority-Based Round-Robin Scheduler (default)**:
-   - This scheduler selects `RUNNABLE` processes with the lowest priority value to run first.
+   - This scheduler selects `RUNNABLE` processes with the lowest priority_value (indicating high priority) to run first.
   
 - **Standard Round-Robin Scheduler**:
    - To switch to a simple round-robin scheduler without priorities, open `defs.h` and locate the following line:
